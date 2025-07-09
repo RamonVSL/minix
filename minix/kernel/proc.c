@@ -322,10 +322,7 @@ not_runnable_pick_new:
 	if (proc_is_preempted(p)) {
 		p->p_rts_flags &= ~RTS_PREEMPTED;
 		if (proc_is_runnable(p)) {
-			if (p->p_cpu_time_left)
-				enqueue_head(p);
-			else
-				enqueue(p);
+			enqueue(p);
 		}
 	}
 
@@ -417,8 +414,8 @@ check_misc_flags:
 	 * check the quantum left before it runs again. We must do it only here
 	 * as we are sure that a possible out-of-quantum message to the
 	 * scheduler will not collide with the regular ipc
-	 */
-	if (!p->p_cpu_time_left)
+	 
+	if (!p->p_cpu_time_left)   processo não vai parar, pois não importa o quantum
 		proc_no_time(p);
 	/*
 	 * After handling the misc flags the selected process might not be
@@ -435,7 +432,7 @@ check_misc_flags:
 #endif
 
 	p = arch_finish_switch_to_user();
-	assert(p->p_cpu_time_left);
+//	assert(p->p_cpu_time_left); não precisa acertar o quantum
 
 	context_stop(proc_addr(KERNEL));
 
@@ -1634,9 +1631,9 @@ void enqueue(
 	  struct proc * p;
 	  p = get_cpulocal_var(proc_ptr);
 	  assert(p);
-	  if((p->p_priority > rp->p_priority) &&
+	/*Sem preempsão  if((p->p_priority > rp->p_priority) &&
 			  (priv(p)->s_flags & PREEMPTIBLE))
-		  RTS_SET(p, RTS_PREEMPTED); /* calls dequeue() */
+		  RTS_SET(p, RTS_PREEMPTED);  calls dequeue() */
   }
 #ifdef CONFIG_SMP
   /*
@@ -1859,54 +1856,13 @@ int isokendpt_f(endpoint_t e, int * p, const int fatalflag)
 
 static void notify_scheduler(struct proc *p)
 {
-	message m_no_quantum;
-	int err;
-
-	assert(!proc_kernel_scheduler(p));
-
-	/* dequeue the process */
-	RTS_SET(p, RTS_NO_QUANTUM);
-	/*
-	 * Notify the process's scheduler that it has run out of
-	 * quantum. This is done by sending a message to the scheduler
-	 * on the process's behalf
-	 */
-	m_no_quantum.m_source = p->p_endpoint;
-	m_no_quantum.m_type   = SCHEDULING_NO_QUANTUM;
-	m_no_quantum.m_krn_lsys_schedule.acnt_queue = cpu_time_2_ms(p->p_accounting.time_in_queue);
-	m_no_quantum.m_krn_lsys_schedule.acnt_deqs      = p->p_accounting.dequeues;
-	m_no_quantum.m_krn_lsys_schedule.acnt_ipc_sync  = p->p_accounting.ipc_sync;
-	m_no_quantum.m_krn_lsys_schedule.acnt_ipc_async = p->p_accounting.ipc_async;
-	m_no_quantum.m_krn_lsys_schedule.acnt_preempt   = p->p_accounting.preempted;
-	m_no_quantum.m_krn_lsys_schedule.acnt_cpu       = cpuid;
-	m_no_quantum.m_krn_lsys_schedule.acnt_cpu_load  = cpu_load();
-
-	/* Reset accounting */
-	reset_proc_accounting(p);
-
-	if ((err = mini_send(p, p->p_scheduler->p_endpoint,
-					&m_no_quantum, FROM_KERNEL))) {
-		panic("WARNING: Scheduling: mini_send returned %d\n", err);
-	}
+//nn faz sentido no FSFC
 }
 
 void proc_no_time(struct proc * p)
 {
-	if (!proc_kernel_scheduler(p) && priv(p)->s_flags & PREEMPTIBLE) {
-		/* this dequeues the process */
-		notify_scheduler(p);
-	}
-	else {
-		/*
-		 * non-preemptible processes only need their quantum to
-		 * be renewed. In fact, they by pass scheduling
-		 */
-		p->p_cpu_time_left = ms_2_cpu_time(p->p_quantum_size_ms);
-#if DEBUG_RACE
-		RTS_SET(p, RTS_PREEMPTED);
-		RTS_UNSET(p, RTS_PREEMPTED);
-#endif
-	}
+//nn faz sentido no FSFC
+	
 }
 
 void reset_proc_accounting(struct proc *p)
