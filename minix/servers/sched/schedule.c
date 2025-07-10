@@ -186,8 +186,8 @@ int do_start_scheduling(message *m_ptr)
 				&parent_nr_n)) != OK)
 			return rv;
 
-		rmp->priority = schedproc[parent_nr_n].priority;
-		rmp->time_slice = schedproc[parent_nr_n].time_slice;
+	//	rmp->priority = schedproc[parent_nr_n].priority;
+	//	rmp->time_slice = schedproc[parent_nr_n].time_slice;
 		break;
 		
 	default: 
@@ -235,7 +235,6 @@ int do_start_scheduling(message *m_ptr)
  *===========================================================================*/
 int do_nice(message *m_ptr) //muda prioridade
 {
-
 }
 
 /*===========================================================================*
@@ -280,19 +279,4 @@ static int schedule_process(struct schedproc * rmp, unsigned flags)
  *===========================================================================*/
 void init_scheduling(void)
 {
-
-}
-
-/*===========================================================================*
- *				balance_queues				     *
- *===========================================================================*/
-
-/* This function in called every N ticks to rebalance the queues. The current
- * scheduler bumps processes down one priority when ever they run out of
- * quantum. This function will find all proccesses that have been bumped down,
- * and pulls them back up. This default policy will soon be changed. */
- 
-void balance_queues(void)
-{
-
-}
+} 
