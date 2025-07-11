@@ -86,6 +86,7 @@ static void pick_cpu(struct schedproc * proc)
 
 int do_noquantum(message *m_ptr)
 {
+	return OK;
 	}
 
 /*===========================================================================*
@@ -199,7 +200,7 @@ int do_start_scheduling(message *m_ptr)
  *===========================================================================*/
 int do_nice(message *m_ptr)
 {
-	return rv;
+	return OK;
 }
 
 /*===========================================================================*
