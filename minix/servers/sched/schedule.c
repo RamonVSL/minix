@@ -141,14 +141,13 @@ int do_start_scheduling(message *m_ptr)
     rmp->parent       = m_ptr->m_lsys_sched_scheduling_start.parent;
     rmp->max_priority = m_ptr->m_lsys_sched_scheduling_start.maxprio;
 
-    // Em FCFS, ignoramos prioridade
+    // prioridade
     // if (rmp->max_priority >= NR_SCHED_QUEUES) {
     //     return EINVAL;
     // }
 
-    /* Caso especial: init (pai de si mesmo) */
     if (rmp->endpoint == rmp->parent) {
-        // No FCFS, não usamos priority nem time_slice
+        
 #ifdef CONFIG_SMP
         rmp->cpu = machine.bsp_id;
 #endif
@@ -156,11 +155,11 @@ int do_start_scheduling(message *m_ptr)
 
     switch (m_ptr->m_type) {
     case SCHEDULING_START:
-        // No FCFS, não usamos priority nem time_slice
+
         break;
 
     case SCHEDULING_INHERIT:
-        // No FCFS, também não herdamos priority nem time_slice
+
         if ((rv = sched_isokendpt(m_ptr->m_lsys_sched_scheduling_start.parent,
                 &parent_nr_n)) != OK)
             return rv;
@@ -177,7 +176,7 @@ int do_start_scheduling(message *m_ptr)
     }
     rmp->flags = IN_USE;
 
-    /* FCFS: apenas colocamos na fila para rodar, sem prioridade/quantum */
+    /* apenas coloca na fila para rodar, sem prioridade/quantum */
     pick_cpu(rmp);
 
     while ((rv = schedule_process(rmp, SCHEDULE_CHANGE_ALL)) == EBADCPU) {
